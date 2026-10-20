@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Latencia Cero · Circuito Crowbar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono&display=swap">
+<style>
+:root{--bg:#0a0f16;--card:#121c2b;--ink:#eaf2fb;--mut:#8ea0b8;--acc:#2fd4c0;--acc2:#ff7a45;--ok:#35d49a;--bad:#ff4d5e;--warn:#ffb93b;--line:#213449;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="light"]{--bg:#f4f7fa;--card:#fff;--ink:#0e1824;--mut:#5c6b7d;--acc:#0e8f80;--acc2:#d9531f;--ok:#128f66;--bad:#d6303f;--warn:#c47c00;--line:#dbe3ec}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:60px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:920px;margin:0 auto;padding:0 16px}.sec{padding:52px 0;scroll-margin-top:56px}
+h1,h2,h3{font-family:"Space Grotesk",system-ui,sans-serif;margin:0}
+p{margin:6px 0;color:var(--mut)}
+#nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:14px;align-items:center;padding:10px 16px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+#nav b{letter-spacing:.12em;color:var(--acc2);font-size:13px}#links{display:flex;gap:16px;flex:1;overflow-x:auto;white-space:nowrap}
+#links a{color:var(--mut);text-decoration:none;font-size:13px}#links a:hover{color:var(--acc)}
+#prog{position:absolute;left:0;bottom:-1px;height:2px;background:var(--acc2);width:0}
+.chip{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;cursor:pointer}
+.chip.on{background:var(--acc2);border-color:var(--acc2);color:#280b03}
+.chip.danger{border-color:var(--bad);color:var(--bad)}
+.hero{padding-top:60px;background:radial-gradient(ellipse at 70% 0,color-mix(in srgb,var(--acc2) 20%,transparent),transparent 60%)}
+.tag{font:12px "JetBrains Mono",monospace;color:var(--acc2);letter-spacing:.1em}
+h1{font-weight:700;font-size:clamp(44px,10vw,92px);line-height:.98;margin:12px 0}
+.gl{background:linear-gradient(90deg,var(--acc2),var(--acc));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:clamp(16px,2.4vw,21px);color:var(--ink);max-width:640px}
+.btn{display:inline-block;padding:11px 20px;border-radius:12px;background:var(--acc2);color:#280b03;font-weight:700;text-decoration:none;margin-top:16px}
+em.n{font:normal 13px "JetBrains Mono",monospace;color:var(--acc2);margin-right:10px}
+.sh{font-weight:700;font-size:clamp(25px,4.4vw,36px)}
+.lead{font-size:16.5px;max-width:700px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;align-items:start}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:18px 0}
+.vs{border-radius:14px;padding:18px;border:1px solid var(--line)}.vs h3{font-size:17px;margin-bottom:6px}.vs i{font:normal 12px "JetBrains Mono",monospace;color:var(--mut)}
+.thesis{border:1px solid var(--acc2);border-radius:16px;padding:18px 22px;font-size:18.5px;background:color-mix(in srgb,var(--acc2) 9%,transparent);margin:16px 0}
+.row{margin:12px 0}.row label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut)}.row label b{color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--acc2)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:10px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:9px}.tile span{font-size:11px;color:var(--mut)}.tile b{display:block;font-size:19px}
+.pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;border:1px solid var(--line)}
+.alert{display:none;border:1px solid var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad);border-radius:10px;padding:10px 14px;margin-top:10px;font-weight:700}
+.alert.show{display:block}
+.msg{border-left:3px solid var(--acc2);padding:9px 11px;border-radius:6px;background:var(--bg);margin-top:10px;color:var(--ink)}
+.t{fill:var(--ink);font:11px system-ui,sans-serif}.tm{fill:var(--mut);font:10px system-ui,sans-serif}
+.flow{fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:4 7;animation:fl 1s linear infinite}
+@keyframes fl{to{stroke-dashoffset:-22}}
+canvas{width:100%;height:160px;display:block}
+.rev{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}.rev.in{opacity:1;transform:none}
+.steps{counter-reset:s;padding:0;list-style:none;margin:10px 0}
+.steps li{counter-increment:s;padding:10px 0 10px 40px;position:relative;border-top:1px solid var(--line)}
+.steps li:first-child{border-top:none}
+.steps li::before{content:counter(s);position:absolute;left:0;top:10px;width:26px;height:26px;border-radius:50%;background:var(--acc2);color:#280b03;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.steps b{color:var(--ink)}
+.fm{font:15px "JetBrains Mono",monospace;background:var(--bg);padding:10px;border-radius:10px;margin:8px 0;color:var(--ink)}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px}summary{cursor:pointer;font-weight:600}details p{margin:8px 0 0}
+footer{text-align:center;padding:30px 16px;color:var(--mut);font-size:13px}
+</style></head>
+<body>
+<nav id="nav"><b>🛡 LATENCIA CERO</b><div id="links"><a href="#problema">Problema</a><a href="#circuito">Circuito</a><a href="#sim">Simulador</a><a href="#conclusion">Conclusión</a></div><button class="chip" id="bTh">🌙</button><div id="prog"></div></nav>
+
+<header class="sec hero"><div class="wrap rev"><span class="tag">ELECTRÓNICA ANALÓGICA · TRABAJO ARGUMENTATIVO</span>
+<h1>Latencia <span class="gl">Cero</span></h1>
+<p class="sub">El software y los ADC necesitan microsegundos para reaccionar. El hardware analógico no espera: el circuito <b>Crowbar</b> detecta, dispara y se sacrifica antes de que el procesador se entere de que algo salió mal.</p>
+<a class="btn" href="#circuito">▶ Ver cómo decide el hardware</a></div></header>
+
+<section class="sec" id="problema"><div class="wrap rev"><h2 class="sh"><em class="n">01</em>El problema: el software llega tarde</h2>
+<p class="lead">Un microcontrolador mide voltaje con un ADC, lo convierte a un número, y el software decide qué hacer. Ese camino completo toma microsegundos. Un pico de sobrevoltaje real puede durar mucho menos que eso.</p>
+<div class="g2">
+<div class="vs"><i>SENSOR</i><h3>🧊 El Zener</h3><p>No mide ni convierte nada a números. Es un sensor físico: en el instante en que el voltaje cruza VZ, empieza a conducir. No hay ciclo de reloj, no hay interrupción, no hay firmware.</p></div>
+<div class="vs"><i>GATILLO</i><h3>🔀 El transistor/SCR</h3><p>Recibe esa corriente y actúa como un gatillo de alta potencia: provoca un cortocircuito intencional, con la fuerza suficiente para fundir un fusible en milisegundos.</p></div></div>
+<p class="thesis">El circuito Crowbar funciona como un <b>sistema inmunológico de hardware</b>: detecta y neutraliza la amenaza por sí mismo, con un reflejo analógico, antes de que cualquier capa de software pueda enterarse de que ocurrió algo.</p>
+</div></section>
+
+<section class="sec" id="circuito"><div class="wrap rev"><h2 class="sh"><em class="n">02</em>El circuito</h2>
+<p class="lead">Vin → Fusible en serie → nodo de salida (CPU) → rama del Zener hacia la base del transistor/SCR → a tierra.</p>
+<div class="two">
+<div class="card"><svg viewBox="0 0 340 200" width="100%">
+<text class="t" x="10" y="22">Vin</text>
+<path d="M30 30V170" stroke="var(--mut)" stroke-width="2" fill="none"/>
+<circle cx="30" cy="100" r="14" fill="var(--card)" stroke="var(--mut)" stroke-width="2"/><text class="tm" x="24" y="104">+ −</text>
+<path class="flow" id="f1" d="M30 30H90" stroke="var(--warn)"/>
+<path d="M30 30H90" stroke="var(--mut)" stroke-width="2" fill="none"/>
+<g id="fuseG"><path id="fuseL" d="M90 30H150" stroke="var(--mut)" stroke-width="2" fill="none"/><rect x="95" y="23" width="50" height="14" rx="6" fill="var(--card)" stroke="var(--acc2)" stroke-width="2"/><text class="tm" x="120" y="18" text-anchor="middle">fusible</text></g>
+<path class="flow" id="f2" d="M150 30H260" stroke="var(--warn)"/>
+<path d="M150 30H260" stroke="var(--mut)" stroke-width="2" fill="none"/>
+<path d="M150 30V70" stroke="var(--mut)" stroke-width="2" fill="none"/>
+<path class="flow" id="f3" d="M150 30V70" stroke="var(--acc)"/>
+<polygon points="140,100 160,100 150,78" fill="var(--card)" stroke="var(--acc)" stroke-width="2"/>
+<path d="M134 72L140 78H160L166 84" stroke="var(--acc)" stroke-width="3" fill="none" stroke-linejoin="round"/>
+<text class="tm" x="165" y="90">Zener 5.1 V</text>
+<path d="M150 100V130" stroke="var(--mut)" stroke-width="2" fill="none"/>
+<path class="flow" id="f4" d="M150 100V130" stroke="var(--acc2)"/>
+<rect id="trg" x="132" y="130" width="36" height="24" rx="4" fill="var(--card)" stroke="var(--mut)" stroke-width="2"/><text class="t" x="150" y="146" text-anchor="middle" style="font-size:10px">SCR</text>
+<path d="M150 154V175" stroke="var(--mut)" stroke-width="2" fill="none"/>
+<path d="M135 175H165M140 181H160M145 187H155" stroke="var(--mut)" stroke-width="2"/>
+<text class="tm" x="150" y="196" text-anchor="middle">tierra</text>
+<rect x="245" y="55" width="30" height="60" rx="6" fill="var(--card)" stroke="var(--ok)" stroke-width="3" id="cpuBox"/><text class="t" x="260" y="88" text-anchor="middle" style="font-weight:700">CPU</text>
+<path d="M260 115V130M245 130H275M245 130V170M275 130V170" stroke="var(--mut)" stroke-width="2" fill="none"/>
+</svg></div>
+<div><ol class="steps">
+<li><b>Normal:</b> Vin fluye por el fusible intacto hacia la CPU. El Zener no conduce, el SCR está en corte. Vout = Vin (hasta un máximo seguro de 5.5 V).</li>
+<li><b>Sobrevoltaje:</b> Vin supera VZ (5.1 V + margen). El Zener entra en ruptura instantáneamente y manda corriente a la compuerta del SCR.</li>
+<li><b>Disparo:</b> el SCR satura y crea un cortocircuito intencional entre Vin y tierra — el "crowbar". La corriente se dispara hacia el fusible.</li>
+<li><b>Sacrificio:</b> esa sobrecorriente funde el fusible en milisegundos. El enlace con la CPU queda roto permanentemente: Vout cae a 0 V y se queda así.</li>
+</ol>
+<p class="hint" style="font-size:12px;color:var(--mut)">El fusible no se repara solo: una vez quemado, el circuito permanece abierto hasta que alguien lo reemplaza físicamente — por eso en el simulador necesitas presionar "Reset".</p></div>
+</div></div></section>
+
+<section class="sec" id="sim"><div class="wrap rev"><h2 class="sh"><em class="n">03</em>Simulador interactivo</h2>
+<div class="card">
+<div class="row"><label>Voltaje de entrada Vin <b id="vL">0.0 V</b></label><input type="range" id="vin" min="0" max="16" step="0.1" value="0"></div>
+<div class="chips" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button class="chip danger" id="bSpike">⚡ Enviar pico de 15 V</button><button class="chip" id="bReset">🔧 Reemplazar fusible (Reset)</button></div>
+<div class="tiles"><div class="tile"><span>Vin</span><b id="tVin">0.0 V</b></div><div class="tile"><span>Vout (CPU)</span><b id="tVout">0.0 V</b></div><div class="tile"><span>Fusible</span><b id="tFuse">intacto</b></div><div class="tile"><span>SCR</span><b id="tScr">corte</b></div></div>
+<p style="margin-top:10px"><span class="pill" id="st">✅ Sistema normal</span></p>
+<div class="alert" id="alFuse">🔥 FUSIBLE QUEMADO</div>
+<div class="alert" id="alLink">🔌 ENLACE ROTO · CPU DESCONECTADA</div>
+<div class="msg" id="msg">Mueve Vin o lanza el pico para ver la protección en acción.</div></div>
+<div class="card"><h2 style="font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em">Osciloscopio</h2>
+<small style="color:var(--mut)"><span style="color:var(--warn)">━</span> Vin &nbsp; <span style="color:var(--acc)">━</span> Vout &nbsp; <span style="color:var(--bad)">┅</span> límite 5.5 V</small>
+<canvas id="scope"></canvas></div>
+</div></section>
+
+<section class="sec" id="conclusion"><div class="wrap rev"><h2 class="sh"><em class="n">04</em>Conclusión</h2>
+<p class="thesis">La tesis de este trabajo: en un sistema digital, la primera línea de defensa nunca es el software. Un ADC y un microcontrolador necesitan ciclos de reloj que un transitorio de voltaje no les da. El circuito Crowbar demuestra que la electrónica analógica —un diodo Zener y un transistor/SCR— puede sentir, decidir y actuar en el mismo instante físico en que ocurre el peligro, sacrificando un componente de bajo costo (el fusible) para salvar uno de alto costo (la CPU).</p>
+<details><summary>Referencia</summary><p>Malvino, A. P. &amp; Bates, D. J. — <i>Principios de Electrónica</i>, 7.ª ed., cap. 5: diodos de propósito especial y el uso del Zener como sensor de referencia en circuitos de protección.</p></details>
+</div></section>
+<footer>Trabajo argumentativo de Electrónica Analógica · circuito Crowbar (Zener + SCR/Transistor + Fusible)</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const VZ=5.1,TRIG=5.6,col=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let isFuseBlown=false,spike=0,t=0,last=performance.now();
+const H=[];
+function speed(id,on){const e=$(id);e.style.opacity=on?1:0}
+function compute(vin){
+  if(!isFuseBlown && vin>=TRIG){isFuseBlown=true}
+  const zenerOn=!isFuseBlown && vin>=VZ;
+  const scrOn=!isFuseBlown && vin>=TRIG;
+  const vout=isFuseBlown?0:Math.min(vin,5.5);
+  return{vin,vout,zenerOn,scrOn}
+}
+function ui(r){
+  $('vL').textContent=r.vin.toFixed(1)+' V';$('tVin').textContent=r.vin.toFixed(1)+' V';$('tVout').textContent=r.vout.toFixed(1)+' V';
+  $('tFuse').textContent=isFuseBlown?'quemado':'intacto';$('tFuse').style.color=isFuseBlown?'var(--bad)':'var(--ok)';
+  $('tScr').textContent=isFuseBlown?'disparado':r.scrOn?'disparado':'corte';$('tScr').style.color=(isFuseBlown||r.scrOn)?'var(--acc2)':'var(--mut)';
+  const st=$('st');
+  st.textContent=isFuseBlown?'🔥 Protección activada · fusible abierto':r.zenerOn?'⚠️ Zener conduce, armando el disparo':'✅ Sistema normal';
+  st.style.color=isFuseBlown?'var(--bad)':r.zenerOn?'var(--warn)':'var(--ok)';
+  $('alFuse').classList.toggle('show',isFuseBlown);$('alLink').classList.toggle('show',isFuseBlown);
+  $('msg').textContent=isFuseBlown?`El pico superó ${TRIG} V, el SCR se disparó y el fusible se fundió. Vout quedó en 0 V de forma permanente: así es como el hardware se sacrifica sin esperar al software. Presiona Reset para reemplazar el fusible.`
+    :r.zenerOn?`Vin = ${r.vin.toFixed(1)} V ya supera VZ (${VZ} V): el Zener está conduciendo y arma el disparo. Si Vin llega a ${TRIG} V, el SCR dispara y el fusible se funde.`
+    :`Vin = ${r.vin.toFixed(1)} V está en rango seguro. El Zener no conduce y Vout sigue a Vin sin ninguna intervención.`;
+  speed('f1',r.vin>0.1);speed('f2',!isFuseBlown&&r.vin>0.1);speed('f3',r.zenerOn);speed('f4',r.scrOn);
+  $('fuseL').setAttribute('stroke-dasharray',isFuseBlown?'4 4':'none');$('fuseL').setAttribute('stroke',isFuseBlown?'var(--bad)':'var(--mut)');
+  $('cpuBox').setAttribute('stroke',isFuseBlown?'var(--mut)':'var(--ok)');
+  $('trg').setAttribute('stroke',(isFuseBlown||r.scrOn)?'var(--acc2)':'var(--mut)')
+}
+const cv=$('scope'),cx=cv.getContext('2d');let W=0,Hh=0;
+function fit(){const d=devicePixelRatio||1;W=cv.clientWidth;Hh=cv.clientHeight;cv.width=W*d;cv.height=Hh*d;cx.setTransform(d,0,0,d,0,0)}
+addEventListener('resize',fit);fit();
+function draw(){const YM=16,y=v=>Hh-4-v/YM*(Hh-8);cx.clearRect(0,0,W,Hh);cx.lineWidth=1;cx.strokeStyle=col('--line');
+  for(let v=0;v<=YM;v+=4){cx.beginPath();cx.moveTo(0,y(v));cx.lineTo(W,y(v));cx.stroke()}
+  cx.setLineDash([5,4]);cx.strokeStyle=col('--bad');cx.beginPath();cx.moveTo(0,y(5.5));cx.lineTo(W,y(5.5));cx.stroke();cx.setLineDash([]);
+  [['--warn',0,1.5],['--acc',1,2.5]].forEach(([c,k,w])=>{cx.strokeStyle=col(c);cx.lineWidth=w;cx.beginPath();
+    H.forEach((p,i)=>{const x=i*W/299;i?cx.lineTo(x,y(p[k])):cx.moveTo(x,y(p[k]))});cx.stroke()})}
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
+  let vin=+$('vin').value;
+  if(spike>0){const s=.6-spike;vin=Math.max(vin,15*Math.sin(Math.PI*s/.6));spike-=dt;if(spike<=0)spike=0}
+  const r=compute(vin);H.push([r.vin,r.vout]);if(H.length>300)H.shift();draw();ui(r);
+  requestAnimationFrame(frame)}
+$('vin').oninput=()=>{};
+$('bSpike').onclick=()=>{spike=.6};
+$('bReset').onclick=()=>{isFuseBlown=false;$('vin').value=0;spike=0};
+$('bTh').onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark'};
+addEventListener('scroll',()=>{$('prog').style.width=scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight)*100+'%'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.1});
+document.querySelectorAll('.rev').forEach(x=>io.observe(x));
+requestAnimationFrame(frame);
+</script></body></html>
